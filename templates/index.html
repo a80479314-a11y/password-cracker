@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Password Breaker</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 600px;
+            border: 2px solid #00ff00;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            background: rgba(0, 20, 0, 0.5);
+        }
+        h1 { text-align: center; text-shadow: 0 0 10px #00ff00; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-size: 18px;
+            font-family: inherit;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        input:focus { outline: none; box-shadow: 0 0 10px #00ff00; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: inherit;
+        }
+        button:hover { background: #00ff00; color: #000; }
+        .result {
+            margin-top: 20px;
+            display: none;
+            border-top: 1px dashed #00ff00;
+            padding-top: 20px;
+        }
+        .rating { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 15px; text-shadow: 0 0 10px currentColor; }
+        .info { margin: 8px 0; font-size: 14px; }
+        .label { color: #888; }
+        .value { float: right; font-weight: bold; }
+
+        .history-title { margin-top: 20px; color: #888; font-size: 12px; border-top: 1px solid #333; padding-top: 10px;}
+        .history-item { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>[ СКАНИРОВАНИЕ ПАРОЛЯ ]</h1>
+        <input type="text" id="passwordInput" placeholder="Введи пароль..." autocomplete="off">
+        <button onclick="checkPassword()">АНАЛИЗИРОВАТЬ</button>
+
+                <!-- Блок анимации -->
+        <div id="hackerBox" style="display: none; margin-top: 20px; font-size: 12px; color: #888; border-top: 1px dashed #333; padding-top: 20px;">
+            <div id="terminalLog" style="height: 60px; overflow: hidden; margin-bottom: 10px;"></div>
+            <div style="width: 100%; background: #111; height: 10px; border: 1px solid #333;">
+                <div id="progressBar" style="width: 0%; height: 100%; background: #00ff00; transition: width 0.1s;"></div>
+            </div>
+            <div id="progressText" style="text-align: right; margin-top: 5px;">0%</div>
+        </div>
+
+        <div class="result" id="result">
+            <div class="rating" id="rating">ОЖИДАНИЕ...</div>
+            <div class="info"><span class="label">Словарная атака:</span> <span class="value" id="dictStatus"></span></div>
+            <div class="info"><span class="label">Время перебора:</span> <span class="value" id="bruteTime"></span></div>
+
+            <div class="history-title">ПОСЛЕДНИЕ ПРОВЕРКИ:</div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+               async function checkPassword() {
+            const pwd = document.getElementById('passwordInput').value;
+            if (!pwd) return;
+
+            // Скрываем старый результат и показываем терминал
+            const resultBox = document.getElementById('result');
+            resultBox.style.display = 'none';
+
+            const hackerBox = document.getElementById('hackerBox');
+            hackerBox.style.display = 'block';
+
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const terminalLog = document.getElementById('terminalLog');
+
+            progressBar.style.width = '0%';
+            progressText.innerText = '0%';
+            terminalLog.innerHTML = '';
+
+            // Генерируем фейковый код для анимации
+            const fakeCode = [
+                "Bypassing security protocols...",
+                "Injecting payload [OK]",
+                "Testing hash collisions: 0x4F2A...",
+                "Dictionary match: checking 10000 lines...",
+                "Analyzing entropy...",
+                "Bruteforce algorithm engaged...",
+                "Accessing memory buffer...",
+                "Decrypting...",
+                "Match found! Preparing report..."
+            ];
+
+            let progress = 0;
+            let logIndex = 0;
+
+            // Запускаем интервал анимации (2 секунды)
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 10) + 5; // Случайный шаг
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                progressText.innerText = progress + '%';
+
+                // Добавляем строчки текста
+                if (logIndex < fakeCode.length && progress > (logIndex * 10)) {
+                    const line = document.createElement('div');
+                    line.innerText = "> " + fakeCode[logIndex];
+                    terminalLog.appendChild(line);
+                    terminalLog.scrollTop = terminalLog.scrollHeight; // Скроллим вниз
+                    logIndex++;
+                }
+
+                // Когда дошли до 100% — отправляем запрос на сервер
+                if (progress >= 100) {
+                    clearInterval(interval);
+
+                    // Небольшая задержка перед показом результата
+                    setTimeout(async () => {
+                        const response = await fetch('/check', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: pwd })
+                        });
+
+                        const data = await response.json();
+
+                        // Скрываем терминал, показываем результат
+                        hackerBox.style.display = 'none';
+                        resultBox.style.display = 'block';
+
+                        const ratingEl = document.getElementById('rating');
+                        ratingEl.innerText = data.rating;
+                        ratingEl.style.color = data.color;
+
+                        document.getElementById('dictStatus').innerText = data.found_in_dict
+                            ? `НАЙДЕН ЗА ${data.attempts} ПОПЫТОК`
+                            : "НЕ НАЙДЕН (ХОРОШО)";
+                        document.getElementById('dictStatus').style.color = data.found_in_dict ? "#ff3333" : "#00ff00";
+
+                        document.getElementById('bruteTime').innerText = data.brute_formatted;
+                        document.getElementById('bruteTime').style.color = data.color;
+
+                        // Отрисовка истории
+                        const historyList = document.getElementById('historyList');
+                        historyList.innerHTML = '';
+                        data.history.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'history-item';
+                            div.innerHTML = `<span>${item.time} | ${item.masked}</span> <span style="color:${item.color}">${item.rating}</span>`;
+                            historyList.appendChild(div);
+                        });
+                    }, 300); // Задержка 0.3 сек после 100%
+                }
+            }, 100); // Интервал 100 мс (полная анимация ~2-3 секунды)
+        }
+    </script>
+</body>
+</html>
