@@ -62,6 +62,32 @@
 
         .history-title { margin-top: 20px; color: #888; font-size: 12px; border-top: 1px solid #333; padding-top: 10px;}
         .history-item { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; }
+              
+        /* --- МОБИЛЬНАЯ ВЕРСИЯ --- */
+        @media (max-width: 650px) {
+            .container {
+                width: 90%; /* Занимает 90% ширины экрана */
+                padding: 15px; /* Уменьшаем отступы внутри */
+                box-sizing: border-box;
+            }
+            h1 {
+                font-size: 20px; /* Уменьшаем заголовок, чтобы влез в одну строку */
+                margin-bottom: 15px;
+            }
+            input, button {
+                font-size: 16px; /* Чуть меньше шрифт для мобилок */
+                padding: 10px;
+            }
+            .rating {
+                font-size: 20px; /* Оценка тоже чуть меньше */
+            }
+            .info {
+                font-size: 13px; /* Текст статистики помельче */
+            }
+            .history-item {
+                font-size: 11px; /* История помельче */
+            }
+        }
     </style>
 </head>
 <body>
