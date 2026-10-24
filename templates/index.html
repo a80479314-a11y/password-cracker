@@ -125,6 +125,30 @@
 
     <script>
         async function checkPassword() {
+
+                        // --- ГЕНЕРАТОР ЗВУКОВ ---
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Функция для создания короткого писка
+            function playBeep(freq, type, duration) {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = type; // 'square', 'sine', 'sawtooth'
+                osc.frequency.value = freq;
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                // Плавное затухание
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            }
+
+            // Звук нажатия (высокий писк)
+            playBeep(800, 'square', 0.1);
+            
             const pwd = document.getElementById('passwordInput').value;
             if (!pwd) return;
 
@@ -156,6 +180,10 @@
 
             let progress = 0;
             let logIndex = 0;
+                        // Звук во время анимации (каждые 150 мс)
+            const soundInterval = setInterval(() => {
+                playBeep(Math.random() * 500 + 400, 'sawtooth', 0.05);
+            }, 150);
 
             const interval = setInterval(() => {
                 progress += Math.floor(Math.random() * 10) + 5;
@@ -172,8 +200,10 @@
                     logIndex++;
                 }
 
-                if (progress >= 100) {
+                                if (progress >= 100) {
                     clearInterval(interval);
+                    clearInterval(soundInterval); // <--- ДОБАВЛЯЕМ ЭТУ СТРОКУ (останавливаем звук)
+                    playBeep(200, 'sine', 0.3);   // <--- ДОБАВЛЯЕМ ЭТУ СТРОКУ (низкий гудок в конце)
                     
                     setTimeout(async () => {
                         const response = await fetch('/check', {
