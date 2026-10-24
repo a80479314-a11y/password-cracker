@@ -104,7 +104,6 @@
         <input type="text" id="passwordInput" placeholder="Введи пароль..." autocomplete="off">
         <button onclick="checkPassword()">АНАЛИЗИРОВАТЬ</button>
         
-        <!-- Блок анимации -->
         <div id="hackerBox" style="display: none; margin-top: 20px; font-size: 12px; color: #888; border-top: 1px dashed #333; padding-top: 20px;">
             <div id="terminalLog" style="height: 60px; overflow: hidden; margin-bottom: 10px;"></div>
             <div style="width: 100%; background: #111; height: 10px; border: 1px solid #333;">
@@ -125,20 +124,20 @@
 
     <script>
         async function checkPassword() {
+            const pwd = document.getElementById('passwordInput').value;
+            if (!pwd) return;
 
-                        // --- ГЕНЕРАТОР ЗВУКОВ ---
+            // --- ГЕНЕРАТОР ЗВУКОВ ---
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             
-            // Функция для создания короткого писка
             function playBeep(freq, type, duration) {
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                osc.type = type; // 'square', 'sine', 'sawtooth'
+                osc.type = type;
                 osc.frequency.value = freq;
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 
-                // Плавное затухание
                 gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
                 
@@ -146,12 +145,10 @@
                 osc.stop(audioCtx.currentTime + duration);
             }
 
-            // Звук нажатия (высокий писк)
+            // Звук нажатия
             playBeep(800, 'square', 0.1);
-            
-            const pwd = document.getElementById('passwordInput').value;
-            if (!pwd) return;
 
+            // Подготовка интерфейса
             const resultBox = document.getElementById('result');
             resultBox.style.display = 'none';
             
@@ -180,7 +177,8 @@
 
             let progress = 0;
             let logIndex = 0;
-                        // Звук во время анимации (каждые 150 мс)
+
+            // Звук во время анимации
             const soundInterval = setInterval(() => {
                 playBeep(Math.random() * 500 + 400, 'sawtooth', 0.05);
             }, 150);
@@ -200,10 +198,10 @@
                     logIndex++;
                 }
 
-                                if (progress >= 100) {
+                if (progress >= 100) {
                     clearInterval(interval);
-                    clearInterval(soundInterval); // <--- ДОБАВЛЯЕМ ЭТУ СТРОКУ (останавливаем звук)
-                    playBeep(200, 'sine', 0.3);   // <--- ДОБАВЛЯЕМ ЭТУ СТРОКУ (низкий гудок в конце)
+                    clearInterval(soundInterval); // Останавливаем звук анимации
+                    playBeep(200, 'sine', 0.4);   // Низкий гудок в конце
                     
                     setTimeout(async () => {
                         const response = await fetch('/check', {
