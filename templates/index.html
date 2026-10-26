@@ -102,6 +102,7 @@
     <div class="container">
         <h1>[ СКАНИРОВАНИЕ ПАРОЛЯ ]</h1>
         <input type="text" id="passwordInput" placeholder="Введи пароль..." autocomplete="off">
+        <button onclick="generatePassword()" style="background: rgba(0, 255, 0, 0.1); margin-bottom: 10px; font-size: 14px;">СГЕНЕРИРОВАТЬ НАДЕЖНЫЙ</button>
         <button onclick="checkPassword()">АНАЛИЗИРОВАТЬ</button>
         
         <div id="hackerBox" style="display: none; margin-top: 20px; font-size: 12px; color: #888; border-top: 1px dashed #333; padding-top: 20px;">
@@ -123,6 +124,20 @@
     </div>
 
     <script>
+        function generatePassword() {
+            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+            let password = "";
+            for (let i = 0; i < 16; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            // Подставляем в поле ввода
+            document.getElementById('passwordInput').value = password;
+            
+            // Автоматически запускаем проверку
+            checkPassword();
+        }
+        
         async function checkPassword() {
             const pwd = document.getElementById('passwordInput').value;
             if (!pwd) return;
